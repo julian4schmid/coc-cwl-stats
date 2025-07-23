@@ -19,13 +19,12 @@ public class DataLoader {
         Map<String, Integer> headerMap = new HashMap<>();
 
         List<String> months = DateUtil.getMonths(numberOfMonths);
+        List<Weight> weightList = calculateWeigths(numberOfMonths);
         for (int i = 0; i < numberOfMonths; i++) {
             String month = months.get(i);
             String filename = String.format(filenameFormat, month);
 
-            // weight: latest data more important
-            double weight = MathUtil.roundWithDecimals(2 - i * (1.0 / (numberOfMonths - 1)), 2);
-
+            double weight = weightList.get(i).getWeight();
 
             try (InputStream is = DataLoader.class.getClassLoader().getResourceAsStream(filename)) {
                 if (is == null) {
@@ -91,6 +90,19 @@ public class DataLoader {
             double averagePerformance = MathUtil.roundWithDecimals(weightedStars / weights, 2);
             player.setAveragePerformance(averagePerformance);
         }
+    }
+
+    public static List<Weight> calculateWeigths(int numberOfMonths) {
+        List<String> months = DateUtil.getMonths(numberOfMonths);
+        List<Weight> monthWeightMap = new ArrayList<>();
+
+        for (int i = 0; i < numberOfMonths; i++) {
+            String month = months.get(i);
+            // weight: latest data more important
+            double weight = MathUtil.roundWithDecimals(2 - i * (1.0 / (numberOfMonths - 1)), 2);
+            monthWeightMap.add(new Weight(month, weight));
+        }
+        return monthWeightMap;
     }
 
 
