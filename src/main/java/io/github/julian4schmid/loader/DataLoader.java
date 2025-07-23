@@ -56,7 +56,7 @@ public class DataLoader {
                         String name = getCellValue(row, headerMap.get("Name"));
                         String tag = getCellValue(row, headerMap.get("Tag"));
                         int level = getNumericCellValue(row, headerMap.get("Town Hall"));
-                        int attacks = getNumericCellValue(row, headerMap.get("Number of Attacks"));
+                        int attacks = getNumericCellValue(row, headerMap.get("Wars Participated"));
                         int stars = getNumericCellValue(row, headerMap.get("Total Stars"));
                         int dips = getNumericCellValue(row, headerMap.get("Lower TH Hits (Dips)"));
 
