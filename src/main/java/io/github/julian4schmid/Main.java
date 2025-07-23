@@ -11,6 +11,7 @@ import java.util.Map;
 public class Main {
     public static void main(String[] args) {
         // data
+        // -------------------------------------------------------------------------------------------------------------
         int numberOfMonths = 4;
         List<String> sheetnames = Arrays.asList(
                 "MAHATMA GÖNNDIR (#2LVJ0L2Y0)",
@@ -23,7 +24,7 @@ public class Main {
                 "Rhön United (#2LQYRJUP9)"
         );
         String inputFilenameFormat = "Royale United Ducks [CWL Stats] %s.xlsx";
-
+        // -------------------------------------------------------------------------------------------------------------
 
         Map<String, Player> playerMap = DataLoader.loadData(numberOfMonths, inputFilenameFormat, sheetnames);
         PerformanceWriter.writePerformance(playerMap, numberOfMonths);
