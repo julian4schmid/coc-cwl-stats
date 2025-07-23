@@ -21,7 +21,8 @@ public class Main {
                 "Gandhis Erben (#2R8QCRV0P)",
                 "Kings & Queens (#2YUVGPR9U)",
                 "Rhön City (#2R2JLU8PR)",
-                "Rhön United (#2LQYRJUP9)"
+                "Rhön United (#2LQYRJUP9)",
+                "KQ CWL (#2J98RCYYC)"
         );
         String inputFilenameFormat = "Royal United Ducks [CWL Stats] %s.xlsx";
         // -------------------------------------------------------------------------------------------------------------
