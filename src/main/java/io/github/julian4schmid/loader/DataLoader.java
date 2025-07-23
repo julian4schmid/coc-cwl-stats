@@ -5,16 +5,10 @@ import io.github.julian4schmid.util.MathUtil;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.format.TextStyle;
 import java.util.*;
-import java.util.Locale;
+
 
 import io.github.julian4schmid.model.*;
 
@@ -30,11 +24,15 @@ public class DataLoader {
             String filename = String.format(filenameFormat, month);
 
             // weight: latest data more important
-            double weight = 2 - i * (1.0 / (numberOfMonths - 1));
+            double weight = MathUtil.roundWithDecimals(2 - i * (1.0 / (numberOfMonths - 1)), 2);
 
-            try (FileInputStream fis = new FileInputStream(new File(filename));
-                 Workbook workbook = new XSSFWorkbook(fis)) {
 
+            try (InputStream is = DataLoader.class.getClassLoader().getResourceAsStream(filename)) {
+                if (is == null) {
+                    throw new FileNotFoundException("Resource not found: " + filename);
+                }
+
+                Workbook workbook = new XSSFWorkbook(is);
                 for (String sheetName : sheetNames) {
                     Sheet sheet = workbook.getSheet(sheetName);
 
@@ -65,7 +63,8 @@ public class DataLoader {
 
                         // only for level 17
                         if (level == 17 && dips < attacks) {
-                            Player player = playerMap.getOrDefault(tag, new Player(name, tag));
+                            playerMap.putIfAbsent(tag, new Player(name, tag));
+                            Player player = playerMap.get(tag);
                             player.getPerformanceList().add(new Performance(attacks, stars, dips, weight, month));
                         }
 
@@ -75,7 +74,6 @@ public class DataLoader {
                 e.printStackTrace();
             }
         }
-
         calculatePerformance(playerMap);
         return playerMap;
     }
@@ -89,6 +87,7 @@ public class DataLoader {
                 weightedStars += p.getAverageStars() * p.getWeight();
                 weights += p.getWeight();
             }
+
             double averagePerformance = MathUtil.roundWithDecimals(weightedStars / weights, 2);
             player.setAveragePerformance(averagePerformance);
         }

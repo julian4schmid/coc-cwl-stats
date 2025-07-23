@@ -34,4 +34,15 @@ public class Player {
     public void setAveragePerformance(double averagePerformance) {
         this.averagePerformance = averagePerformance;
     }
+
+    @Override
+    public String toString() {
+        return "Player{" +
+                "name='" + name + '\'' +
+                ", tag='" + tag + '\'' +
+                ", performanceList=" + performanceList +
+                ", averagePerformance=" + averagePerformance +
+                '}';
+    }
+
 }

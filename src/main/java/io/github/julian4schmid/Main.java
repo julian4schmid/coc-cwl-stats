@@ -23,7 +23,7 @@ public class Main {
                 "Rhön City (#2R2JLU8PR)",
                 "Rhön United (#2LQYRJUP9)"
         );
-        String inputFilenameFormat = "Royale United Ducks [CWL Stats] %s.xlsx";
+        String inputFilenameFormat = "Royal United Ducks [CWL Stats] %s.xlsx";
         // -------------------------------------------------------------------------------------------------------------
 
         Map<String, Player> playerMap = DataLoader.loadData(numberOfMonths, inputFilenameFormat, sheetnames);

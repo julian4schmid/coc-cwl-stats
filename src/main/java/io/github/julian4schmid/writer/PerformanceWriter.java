@@ -75,10 +75,10 @@ public class PerformanceWriter {
         }
 
         // Save to file
-        try (FileOutputStream fos = new FileOutputStream("Performance Übersicht.xlsx")) {
+        try (FileOutputStream fos = new FileOutputStream("target/Performance Übersicht.xlsx")) {
             workbook.write(fos);
             workbook.close();
-            System.out.println("Excel file created: players.xlsx");
+            System.out.println("Excel file created");
         } catch (IOException e) {
             e.printStackTrace();
         }

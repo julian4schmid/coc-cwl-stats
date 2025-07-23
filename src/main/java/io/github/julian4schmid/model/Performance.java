@@ -45,4 +45,16 @@ public class Performance {
     public String getMonth() {
         return month;
     }
+
+    @Override
+    public String toString() {
+        return "Performance{" +
+                "attacks=" + attacks +
+                ", stars=" + stars +
+                ", dips=" + dips +
+                ", weight=" + weight +
+                ", month='" + month + '\'' +
+                ", averageStars=" + averageStars +
+                '}';
+    }
 }
