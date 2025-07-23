@@ -1,5 +1,7 @@
 package io.github.julian4schmid.model;
 
+import io.github.julian4schmid.util.MathUtil;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
@@ -8,14 +10,16 @@ public class Performance {
     private final int stars;
     private final int dips;
     private final double weight;
+    private final String month;
     private final double averageStars;
 
-    public Performance(int attacks, int stars, int dips, double weight) {
+    public Performance(int attacks, int stars, int dips, double weight, String month) {
         this.weight = weight;
         this.dips = dips;
         this.stars = stars;
         this.attacks = attacks;
-        this.averageStars = 1.0 * (stars - 3 * dips) / (attacks - dips);
+        this.month = month;
+        this.averageStars = MathUtil.roundWithDecimals(1.0 * (stars - 3 * dips) / (attacks - dips), 2);
     }
 
     public double getAverageStars() {
@@ -36,5 +40,9 @@ public class Performance {
 
     public int getAttacks() {
         return attacks;
+    }
+
+    public String getMonth() {
+        return month;
     }
 }
