@@ -4,8 +4,10 @@ import io.github.julian4schmid.loader.DataLoader;
 import io.github.julian4schmid.model.Weight;
 import io.github.julian4schmid.model.Performance;
 import io.github.julian4schmid.model.Player;
+import io.github.julian4schmid.model.PlayerComparator;
 
 import io.github.julian4schmid.util.DateUtil;
+import io.github.julian4schmid.util.MathUtil;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -14,9 +16,10 @@ import java.io.IOException;
 import java.util.*;
 
 public class PerformanceWriter {
-    public static void writePerformance(Map<String, Player> playerMap, int numberOfMonths) {
+    public static void writePerformance(Map<String, Player> playerMap, int numberOfMonths,
+                                        Map<String, List<Player>> rosterMap) {
         List<Player> playerList = new ArrayList<>(playerMap.values());
-        playerList.sort(Comparator.comparingDouble(Player::getAveragePerformance).reversed());
+        playerList.sort(new PlayerComparator());
 
         // Create Excel file
         Workbook workbook = new XSSFWorkbook();
@@ -24,14 +27,12 @@ public class PerformanceWriter {
 
         // Header row
         List<String> headers = new ArrayList<>(List.of("Name", "Tag", "Performance"));
-        List<String> months = DateUtil.getMonths(numberOfMonths);
-        List<Weight> weightList = DataLoader.calculateWeigths(numberOfMonths);
+        List<Weight> weightList = DataLoader.calculateWeights(numberOfMonths);
         Map<String, Weight> weightMap = new HashMap<>();
         for (Weight weight : weightList) {
             headers.add(weight.toString());
             weightMap.put(weight.getMonth(), weight);
         }
-
 
         Row headerRow = sheet.createRow(0);
         Map<String, Integer> headerMap = new HashMap<>();
@@ -42,12 +43,7 @@ public class PerformanceWriter {
         }
 
         // visualize performance
-        CellStyle darkGreen = createColoredStyle(workbook, IndexedColors.DARK_GREEN, true);
-        CellStyle lightGreen = createColoredStyle(workbook, IndexedColors.LIGHT_GREEN, false);
-        CellStyle yellow = createColoredStyle(workbook, IndexedColors.YELLOW, false);
-        CellStyle orange = createColoredStyle(workbook, IndexedColors.ORANGE, false);
-        CellStyle red = createColoredStyle(workbook, IndexedColors.RED, true);
-
+        Map<String, CellStyle> styleMap = createColoredStyles(workbook);
 
         // Data rows
         int rowIndex = 1;
@@ -60,17 +56,7 @@ public class PerformanceWriter {
             cell.setCellValue(averagePerformance);
 
             // Apply style
-            if (averagePerformance >= 2.8) {
-                cell.setCellStyle(darkGreen);
-            } else if (averagePerformance >= 2.6) {
-                cell.setCellStyle(lightGreen);
-            } else if (averagePerformance >= 2.4) {
-                cell.setCellStyle(yellow);
-            } else if (averagePerformance >= 2.2) {
-                cell.setCellStyle(orange);
-            } else {
-                cell.setCellStyle(red);
-            }
+            colorCell(cell, averagePerformance, styleMap);
 
             for (Performance p : player.getPerformanceList()) {
                 row.createCell(headerMap.get(weightMap.get(p.getMonth()).toString()))
@@ -79,17 +65,92 @@ public class PerformanceWriter {
         }
 
         // Auto-size columns
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3 + numberOfMonths; i++) {
             sheet.autoSizeColumn(i);
         }
 
+        // roster performance
+        writePerformanceToRoster(workbook, rosterMap);
+
         // Save to file
-        try (FileOutputStream fos = new FileOutputStream("target/Performance Übersicht.xlsx")) {
+        String name = String.format("target/CWL Power Ranking %s.xlsx", DateUtil.getMonths(1).getFirst());
+        try (FileOutputStream fos = new FileOutputStream(name)) {
             workbook.write(fos);
             workbook.close();
             System.out.println("Excel file created");
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void writePerformanceToRoster(Workbook wb, Map<String, List<Player>> rosterMap) {
+        Sheet sheet = wb.createSheet("Roster");
+        List<String> headers = new ArrayList<>(List.of("Clan", "Name", "Tag", "Performance", "Letzte CWL"));
+
+        Map<String, CellStyle> styleMap = createColoredStyles(wb);
+
+        Row headerRow = sheet.createRow(0);
+        for (int i = 0; i < headers.size(); i++) {
+            String header = headers.get(i);
+            headerRow.createCell(i).setCellValue(header);
+        }
+
+        int rowIndex = 1;
+        for (String clan : rosterMap.keySet()) {
+            rowIndex++;
+
+            List<Player> playerList = rosterMap.get(clan);
+            Collections.sort(playerList, new PlayerComparator());
+            double sumPerformance = 0;
+            int countPerformance = 0;
+            double sumRecentPerformance = 0;
+            int countRecentPerformance = 0;
+            for (Player player : playerList) {
+                Row row = sheet.createRow(rowIndex++);
+                row.createCell(0).setCellValue(clan);
+                row.createCell(1).setCellValue(player.getName());
+                row.createCell(2).setCellValue(player.getTag());
+
+                // average Performance
+                Cell cell = row.createCell(3);
+                cell.setCellValue(player.getAveragePerformance());
+                colorCell(cell, player.getAveragePerformance(), styleMap);
+                if (player.getAveragePerformance() >= 0.1) {
+                    sumPerformance += player.getAveragePerformance();
+                    countPerformance++;
+                }
+
+                // performance of most recent cwl
+                if (!player.getPerformanceList().isEmpty() &&
+                        player.getPerformanceList().getFirst().getMonth().equals(DateUtil.getCurrentMonth())) {
+                    cell = row.createCell(4);
+                    double recentPerformance = player.getPerformanceList().getFirst().getAverageStars();
+                    cell.setCellValue(recentPerformance);
+                    colorCell(cell, recentPerformance, styleMap);
+                    if (recentPerformance >= 0.1) {
+                        sumRecentPerformance += recentPerformance;
+                        countRecentPerformance++;
+                    }
+                }
+            }
+            if (countPerformance > 0) {
+                Row row = sheet.createRow(rowIndex++);
+                row.createCell(1).setCellValue("Durchschnitt (17er)");
+                Cell cell = row.createCell(3);
+                double avgRoster = MathUtil.roundWithDecimals(sumPerformance / countPerformance, 2);
+                cell.setCellValue(avgRoster);
+                colorCell(cell, avgRoster, styleMap);
+
+                cell = row.createCell(4);
+                avgRoster = MathUtil.roundWithDecimals(sumRecentPerformance / countRecentPerformance, 2);
+                cell.setCellValue(avgRoster);
+                colorCell(cell, avgRoster, styleMap);
+            }
+        }
+
+        // Auto-size columns
+        for (int i = 0; i < 4; i++) {
+            sheet.autoSizeColumn(i);
         }
     }
 
@@ -107,5 +168,29 @@ public class PerformanceWriter {
         style.setFont(font);
 
         return style;
+    }
+
+    private static Map<String, CellStyle> createColoredStyles(Workbook wb) {
+        Map<String, CellStyle> styleMap = new HashMap<>();
+        styleMap.put("darkGreen", createColoredStyle(wb, IndexedColors.DARK_GREEN, true));
+        styleMap.put("lightGreen", createColoredStyle(wb, IndexedColors.LIGHT_GREEN, false));
+        styleMap.put("lightOrange", createColoredStyle(wb, IndexedColors.LIGHT_ORANGE, false));
+        styleMap.put("orange", createColoredStyle(wb, IndexedColors.ORANGE, false));
+        styleMap.put("red", createColoredStyle(wb, IndexedColors.RED, true));
+        return styleMap;
+    }
+
+    private static void colorCell(Cell cell, double val, Map<String, CellStyle> styleMap) {
+        if (val >= 2.8) {
+            cell.setCellStyle(styleMap.get("darkGreen"));
+        } else if (val >= 2.6) {
+            cell.setCellStyle(styleMap.get("lightGreen"));
+        } else if (val >= 2.4) {
+            cell.setCellStyle(styleMap.get("lightOrange"));
+        } else if (val >= 2.2) {
+            cell.setCellStyle(styleMap.get("orange"));
+        } else if (val >= 0.1) {
+            cell.setCellStyle(styleMap.get("red"));
+        }
     }
 }
