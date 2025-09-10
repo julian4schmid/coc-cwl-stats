@@ -14,12 +14,12 @@ import io.github.julian4schmid.model.*;
 
 
 public class DataLoader {
-    public static Map<String, Player> loadData(int numberOfMonths, String filenameFormat, List<String> sheetNames) {
+    public static Map<String, Player> loadPlayerData(int numberOfMonths, String filenameFormat, List<String> sheetNames) {
         Map<String, Player> playerMap = new HashMap<>();
         Map<String, Integer> headerMap = new HashMap<>();
 
         List<String> months = DateUtil.getMonths(numberOfMonths);
-        List<Weight> weightList = calculateWeigths(numberOfMonths);
+        List<Weight> weightList = calculateWeights(numberOfMonths);
         for (int i = 0; i < numberOfMonths; i++) {
             String month = months.get(i);
             String filename = String.format(filenameFormat, month);
@@ -77,6 +77,41 @@ public class DataLoader {
         return playerMap;
     }
 
+    public static Map<String, List<Player>> loadRosterData(Map<String, Player> playerMap) {
+        String filename = "Royal United Ducks [Rosters].xlsx";
+        String sheetName = "All Members";
+        Map<String, List<Player>> rosterMap = new HashMap<>();
+
+        try (InputStream is = DataLoader.class.getClassLoader().getResourceAsStream(filename)) {
+            if (is == null) {
+                throw new FileNotFoundException("Resource not found: " + filename);
+            }
+
+            Workbook workbook = new XSSFWorkbook(is);
+            Sheet sheet = workbook.getSheet(sheetName);
+            Iterator<Row> rowIterator = sheet.iterator();
+
+
+            // header
+            rowIterator.next();
+
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+
+                String name = getCellValue(row, 0);
+                String tag = getCellValue(row, 1);
+                String clan = getCellValue(row, 3);
+
+                rosterMap.putIfAbsent(clan, new ArrayList<>());
+                rosterMap.get(clan).add(playerMap.getOrDefault(tag, new Player(name, tag)));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return rosterMap;
+    }
+
 
     public static void calculatePerformance(Map<String, Player> playerMap) {
         for (Player player : playerMap.values()) {
@@ -92,7 +127,7 @@ public class DataLoader {
         }
     }
 
-    public static List<Weight> calculateWeigths(int numberOfMonths) {
+    public static List<Weight> calculateWeights(int numberOfMonths) {
         List<String> months = DateUtil.getMonths(numberOfMonths);
         List<Weight> monthWeightMap = new ArrayList<>();
 

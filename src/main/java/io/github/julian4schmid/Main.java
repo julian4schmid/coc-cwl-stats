@@ -14,20 +14,24 @@ public class Main {
         // -------------------------------------------------------------------------------------------------------------
         int numberOfMonths = 4;
         List<String> sheetnames = Arrays.asList(
-                "MAHATMA GÖNNDIR (#2LVJ0L2Y0)",
                 "Therapiesitzung (#2RQRCCVJ0)",
+                "Kings & Queens (#2YUVGPR9U)",
                 "Kings & Queens2 (#2Q0RRLV08)",
                 "Kings & Queens3 (#2YRC8RU8V)",
+                "Kings & Queens4 (#2JLU808R0)",
+                "KQ CWL (#2J98RCYYC)",
+                "MAHATMA GÖNNDIR (#2LVJ0L2Y0)",
                 "Gandhis Erben (#2R8QCRV0P)",
-                "Kings & Queens (#2YUVGPR9U)",
-                "Rhön City (#2R2JLU8PR)",
                 "Rhön United (#2LQYRJUP9)",
-                "KQ CWL (#2J98RCYYC)"
+                "Rhön City (#2R2JLU8PR)",
+                "Rhön Ultras (#2JPVCYULV)",
+                "Ostsee United (#2RQ80YGL8)"
         );
         String inputFilenameFormat = "Royal United Ducks [CWL Stats] %s.xlsx";
         // -------------------------------------------------------------------------------------------------------------
 
-        Map<String, Player> playerMap = DataLoader.loadData(numberOfMonths, inputFilenameFormat, sheetnames);
-        PerformanceWriter.writePerformance(playerMap, numberOfMonths);
+        Map<String, Player> playerMap = DataLoader.loadPlayerData(numberOfMonths, inputFilenameFormat, sheetnames);
+        Map<String, List<Player>> rosterMap = DataLoader.loadRosterData(playerMap);
+        PerformanceWriter.writePerformance(playerMap, numberOfMonths, rosterMap);
     }
 }
