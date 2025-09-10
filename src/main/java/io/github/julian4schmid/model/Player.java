@@ -8,6 +8,7 @@ public class Player {
     private final String tag;
     private final List<Performance> performanceList;
     private double averagePerformance;
+    private String roster;
 
     public Player(String name, String tag) {
         this.name = name;
@@ -33,6 +34,10 @@ public class Player {
 
     public void setAveragePerformance(double averagePerformance) {
         this.averagePerformance = averagePerformance;
+    }
+
+    public void setRoster(String roster) {
+        this.roster = roster;
     }
 
     @Override
