@@ -2,6 +2,7 @@ package io.github.julian4schmid;
 
 import io.github.julian4schmid.loader.DataLoader;
 import io.github.julian4schmid.model.Player;
+import io.github.julian4schmid.service.PerformanceCalculator;
 import io.github.julian4schmid.writer.PerformanceWriter;
 
 import java.util.Arrays;
@@ -31,6 +32,8 @@ public class Main {
         // -------------------------------------------------------------------------------------------------------------
 
         Map<String, Player> playerMap = DataLoader.loadPlayerData(numberOfMonths, inputFilenameFormat, sheetnames);
+        PerformanceCalculator.calculatePerformance(playerMap, numberOfMonths, true);
+        PerformanceCalculator.calculatePerformance(playerMap, numberOfMonths);
         Map<String, List<Player>> rosterMap = DataLoader.loadRosterData(playerMap);
         PerformanceWriter.writePerformance(playerMap, numberOfMonths, rosterMap);
     }

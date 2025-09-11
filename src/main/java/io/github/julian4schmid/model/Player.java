@@ -8,7 +8,8 @@ public class Player {
     private final String tag;
     private final List<Performance> performanceList;
     private double averagePerformance;
-    private String roster;
+    private int previousRank;
+    private int newRank;
 
     public Player(String name, String tag) {
         this.name = name;
@@ -36,8 +37,20 @@ public class Player {
         this.averagePerformance = averagePerformance;
     }
 
-    public void setRoster(String roster) {
-        this.roster = roster;
+    public int getNewRank() {
+        return newRank;
+    }
+
+    public int getPreviousRank() {
+        return previousRank;
+    }
+
+    public void setNewRank(int newRank) {
+        this.newRank = newRank;
+    }
+
+    public void setPreviousRank(int previousRank) {
+        this.previousRank = previousRank;
     }
 
     @Override

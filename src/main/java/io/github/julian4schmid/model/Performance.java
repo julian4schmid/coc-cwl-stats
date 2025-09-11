@@ -2,23 +2,20 @@ package io.github.julian4schmid.model;
 
 import io.github.julian4schmid.util.MathUtil;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
 public class Performance {
     private final int attacks;
     private final int stars;
     private final int dips;
-    private final double weight;
+    private double weightDouble;
     private final String month;
     private final double averageStars;
 
-    public Performance(int attacks, int stars, int dips, double weight, String month) {
-        this.weight = weight;
+    public Performance(int attacks, int stars, int dips, String month) {
         this.dips = dips;
         this.stars = stars;
         this.attacks = attacks;
         this.month = month;
+        this.weightDouble = 0;
         this.averageStars = MathUtil.roundWithDecimals(1.0 * (stars - 3 * dips) / (attacks - dips), 2);
     }
 
@@ -26,24 +23,16 @@ public class Performance {
         return averageStars;
     }
 
-    public double getWeight() {
-        return weight;
-    }
-
-    public int getDips() {
-        return dips;
-    }
-
-    public int getStars() {
-        return stars;
-    }
-
-    public int getAttacks() {
-        return attacks;
+    public double getWeightDouble() {
+        return weightDouble;
     }
 
     public String getMonth() {
         return month;
+    }
+
+    public void setWeightDouble(double weightDouble) {
+        this.weightDouble = weightDouble;
     }
 
     @Override
@@ -52,7 +41,7 @@ public class Performance {
                 "attacks=" + attacks +
                 ", stars=" + stars +
                 ", dips=" + dips +
-                ", weight=" + weight +
+                ", weight=" + weightDouble +
                 ", month='" + month + '\'' +
                 ", averageStars=" + averageStars +
                 '}';

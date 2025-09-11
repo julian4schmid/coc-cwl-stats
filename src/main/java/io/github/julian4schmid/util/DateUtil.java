@@ -10,13 +10,17 @@ public class DateUtil {
     // cwl data only available after the 8th
     private static final int dayOffset = 8;
 
-    public static List<String> getMonths(int n) {
+    public static List<String> getMonths(int end) {
+        return getMonths(0, end);
+    }
+
+    public static List<String> getMonths(int start, int end) {
         List<String> months = new ArrayList<>();
 
         LocalDate today = LocalDate.now();
 
         today = today.minusDays(dayOffset);
-        for (int i = 0; i < n; i++) {
+        for (int i = start; i < end + 1; i++) {
             LocalDate date = today.minusMonths(i);
             months.add(date.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN));
         }

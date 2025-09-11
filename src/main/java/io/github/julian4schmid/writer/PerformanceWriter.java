@@ -1,16 +1,15 @@
 package io.github.julian4schmid.writer;
 
-import io.github.julian4schmid.loader.DataLoader;
 import io.github.julian4schmid.model.Weight;
 import io.github.julian4schmid.model.Performance;
 import io.github.julian4schmid.model.Player;
 import io.github.julian4schmid.model.PlayerComparator;
-
+import io.github.julian4schmid.service.PerformanceCalculator;
 import io.github.julian4schmid.util.DateUtil;
 import io.github.julian4schmid.util.MathUtil;
+
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
@@ -26,8 +25,8 @@ public class PerformanceWriter {
         Sheet sheet = workbook.createSheet("Spieler");
 
         // Header row
-        List<String> headers = new ArrayList<>(List.of("Name", "Tag", "Performance"));
-        List<Weight> weightList = DataLoader.calculateWeights(numberOfMonths);
+        List<String> headers = new ArrayList<>(List.of("Delta", "Rang", "Name", "Tag", "Performance"));
+        List<Weight> weightList = PerformanceCalculator.calculateWeights(numberOfMonths);
         Map<String, Weight> weightMap = new HashMap<>();
         for (Weight weight : weightList) {
             headers.add(weight.toString());
@@ -48,24 +47,40 @@ public class PerformanceWriter {
         // Data rows
         int rowIndex = 1;
         for (Player player : playerList) {
-            Row row = sheet.createRow(rowIndex++);
-            row.createCell(headerMap.get("Name")).setCellValue(player.getName());
-            row.createCell(headerMap.get("Tag")).setCellValue(player.getTag());
             double averagePerformance = player.getAveragePerformance();
-            Cell cell = row.createCell(headerMap.get("Performance"));
-            cell.setCellValue(averagePerformance);
+            if (averagePerformance > 0) {
+                Row row = sheet.createRow(rowIndex++);
+                row.createCell(headerMap.get("Rang")).setCellValue(player.getNewRank());
 
-            // Apply style
-            colorCell(cell, averagePerformance, styleMap);
+                int rankChange = player.getPreviousRank() - player.getNewRank();
+                String arrow = rankChange < 0 ? "↘ "
+                        : rankChange == 0 ? "→ "
+                        : "↗ ";
+                if (player.getPreviousRank() > 0) {
+                    row.createCell(headerMap.get("Delta")).setCellValue(arrow + rankChange);
+                } else {
+                    row.createCell(headerMap.get("Delta")).setCellValue("↑ ");
+                }
 
-            for (Performance p : player.getPerformanceList()) {
-                row.createCell(headerMap.get(weightMap.get(p.getMonth()).toString()))
-                        .setCellValue(p.getAverageStars());
+                row.createCell(headerMap.get("Name")).setCellValue(player.getName());
+                row.createCell(headerMap.get("Tag")).setCellValue(player.getTag());
+                Cell cell = row.createCell(headerMap.get("Performance"));
+                cell.setCellValue(averagePerformance);
+
+                // Apply style
+                colorCell(cell, averagePerformance, styleMap);
+
+                for (Performance p : player.getPerformanceList()) {
+                    if (weightMap.containsKey(p.getMonth())) {
+                        row.createCell(headerMap.get(weightMap.get(p.getMonth()).toString()))
+                                .setCellValue(p.getAverageStars());
+                    }
+                }
             }
         }
 
         // Auto-size columns
-        for (int i = 0; i < 3 + numberOfMonths; i++) {
+        for (int i = 0; i < 5 + numberOfMonths; i++) {
             sheet.autoSizeColumn(i);
         }
 
@@ -100,7 +115,7 @@ public class PerformanceWriter {
             rowIndex++;
 
             List<Player> playerList = rosterMap.get(clan);
-            Collections.sort(playerList, new PlayerComparator());
+            playerList.sort(new PlayerComparator());
             double sumPerformance = 0;
             int countPerformance = 0;
             double sumRecentPerformance = 0;

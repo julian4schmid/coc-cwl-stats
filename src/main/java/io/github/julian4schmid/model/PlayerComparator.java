@@ -12,8 +12,8 @@ public class PlayerComparator implements Comparator<Player> {
         }
 
         // most recent cwl
-        x = Double.compare(b.getPerformanceList().getFirst().getWeight(),
-                a.getPerformanceList().getFirst().getWeight());
+        x = Double.compare(b.getPerformanceList().getFirst().getWeightDouble(),
+                a.getPerformanceList().getFirst().getWeightDouble());
         if (x != 0) {
             return x;
         }
@@ -26,6 +26,12 @@ public class PlayerComparator implements Comparator<Player> {
         }
 
         // number of recorded performances
-        return Integer.compare(b.getPerformanceList().size(), a.getPerformanceList().size());
+        x = Integer.compare(b.getPerformanceList().size(), a.getPerformanceList().size());
+        if (x != 0) {
+            return x;
+        }
+
+        // names
+        return a.getName().compareTo(b.getName());
     }
 }

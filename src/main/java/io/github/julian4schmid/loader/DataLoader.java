@@ -1,7 +1,6 @@
 package io.github.julian4schmid.loader;
 
 import io.github.julian4schmid.util.DateUtil;
-import io.github.julian4schmid.util.MathUtil;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -19,12 +18,11 @@ public class DataLoader {
         Map<String, Integer> headerMap = new HashMap<>();
 
         List<String> months = DateUtil.getMonths(numberOfMonths);
-        List<Weight> weightList = calculateWeights(numberOfMonths);
-        for (int i = 0; i < numberOfMonths; i++) {
+        for (int i = 0; i < numberOfMonths + 1; i++) {
             String month = months.get(i);
             String filename = String.format(filenameFormat, month);
 
-            double weight = weightList.get(i).getWeight();
+
 
             try (InputStream is = DataLoader.class.getClassLoader().getResourceAsStream(filename)) {
                 if (is == null) {
@@ -64,7 +62,7 @@ public class DataLoader {
                         if (level == 17 && dips < attacks) {
                             playerMap.putIfAbsent(tag, new Player(name, tag));
                             Player player = playerMap.get(tag);
-                            player.getPerformanceList().add(new Performance(attacks, stars, dips, weight, month));
+                            player.getPerformanceList().add(new Performance(attacks, stars, dips, month));
                         }
 
                     }
@@ -73,7 +71,6 @@ public class DataLoader {
                 e.printStackTrace();
             }
         }
-        calculatePerformance(playerMap);
         return playerMap;
     }
 
@@ -113,32 +110,6 @@ public class DataLoader {
     }
 
 
-    public static void calculatePerformance(Map<String, Player> playerMap) {
-        for (Player player : playerMap.values()) {
-            double weightedStars = 0;
-            double weights = 0;
-            for (Performance p : player.getPerformanceList()) {
-                weightedStars += p.getAverageStars() * p.getWeight();
-                weights += p.getWeight();
-            }
-
-            double averagePerformance = MathUtil.roundWithDecimals(weightedStars / weights, 2);
-            player.setAveragePerformance(averagePerformance);
-        }
-    }
-
-    public static List<Weight> calculateWeights(int numberOfMonths) {
-        List<String> months = DateUtil.getMonths(numberOfMonths);
-        List<Weight> monthWeightMap = new ArrayList<>();
-
-        for (int i = 0; i < numberOfMonths; i++) {
-            String month = months.get(i);
-            // weight: latest data more important
-            double weight = MathUtil.roundWithDecimals(2 - i * (1.0 / (numberOfMonths - 1)), 2);
-            monthWeightMap.add(new Weight(month, weight));
-        }
-        return monthWeightMap;
-    }
 
 
     private static String getCellValue(Row row, int colIndex) {

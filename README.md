@@ -12,6 +12,7 @@ This Java application analyzes and ranks player of several clans in the mobile g
 src/main/java/io.github.julian4schmid/ 
 ├── loader/          Data loader from Excel 
 ├── model/           Data structures  
+├── service/         Calculations
 ├── util/            Helpers  
 ├── writer/          Excel Writer  
 └── Main.java        Entry point
