@@ -21,19 +21,22 @@ public class Main {
                 "Kings & Queens3 (#2YRC8RU8V)",
                 "Kings & Queens4 (#2JLU808R0)",
                 "KQ CWL (#2J98RCYYC)",
+                "KQ Event (#2QGLRR0QU)",
                 "MAHATMA GÖNNDIR (#2LVJ0L2Y0)",
                 "Gandhis Erben (#2R8QCRV0P)",
                 "Rhön United (#2LQYRJUP9)",
                 "Rhön City (#2R2JLU8PR)",
                 "Rhön Ultras (#2JPVCYULV)",
-                "Ostsee United (#2RQ80YGL8)"
+                "Ostsee United (#2RQ80YGL8),",
+                "Goldfighterclan (#RJCCVJP)",
+                "Undercover 3.0 (#Y0CR90P2)"
         );
         String inputFilenameFormat = "Royal United Ducks [CWL Stats] %s.xlsx";
         // -------------------------------------------------------------------------------------------------------------
 
         Map<String, Player> playerMap = DataLoader.loadPlayerData(numberOfMonths, inputFilenameFormat, sheetnames);
         PerformanceCalculator.calculatePerformance(playerMap, numberOfMonths, true);
-        PerformanceCalculator.calculatePerformance(playerMap, numberOfMonths);
+        PerformanceCalculator.calculatePerformance(playerMap, numberOfMonths, false);
         Map<String, List<Player>> rosterMap = DataLoader.loadRosterData(playerMap);
         PerformanceWriter.writePerformance(playerMap, numberOfMonths, rosterMap);
     }

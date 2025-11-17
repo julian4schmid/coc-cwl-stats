@@ -10,6 +10,7 @@ import io.github.julian4schmid.util.MathUtil;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
@@ -141,7 +142,7 @@ public class PerformanceWriter {
                     cell = row.createCell(4);
                     double recentPerformance = player.getPerformanceList().getFirst().getAverageStars();
                     cell.setCellValue(recentPerformance);
-                    colorCell(cell, recentPerformance, styleMap);
+                    //colorCell(cell, recentPerformance, styleMap);
                     if (recentPerformance >= 0.1) {
                         sumRecentPerformance += recentPerformance;
                         countRecentPerformance++;
@@ -157,9 +158,11 @@ public class PerformanceWriter {
                 colorCell(cell, avgRoster, styleMap);
 
                 cell = row.createCell(4);
-                avgRoster = MathUtil.roundWithDecimals(sumRecentPerformance / countRecentPerformance, 2);
-                cell.setCellValue(avgRoster);
-                colorCell(cell, avgRoster, styleMap);
+                if (countRecentPerformance > 0) {
+                    avgRoster = MathUtil.roundWithDecimals(sumRecentPerformance / countRecentPerformance, 2);
+                    cell.setCellValue(avgRoster);
+                    colorCell(cell, avgRoster, styleMap);
+                }
             }
         }
 

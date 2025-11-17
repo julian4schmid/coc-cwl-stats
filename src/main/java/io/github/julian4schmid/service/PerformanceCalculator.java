@@ -13,10 +13,6 @@ import java.util.Map;
 
 public class PerformanceCalculator {
 
-    public static void calculatePerformance(Map<String, Player> playerMap, int numberOfMonths) {
-        calculatePerformance(playerMap, numberOfMonths, false);
-    }
-
     public static void calculatePerformance(Map<String, Player> playerMap, int numberOfMonths, boolean previous) {
         List<Weight> weightList = PerformanceCalculator.calculateWeights(numberOfMonths);
         if (previous) {
@@ -26,14 +22,14 @@ public class PerformanceCalculator {
         for (Player player : playerMap.values()) {
             double weightedStars = 0;
             double weights = 0;
-            for (Performance p : player.getPerformanceList()) {
+            for (Performance perf : player.getPerformanceList()) {
                 for (Weight w : weightList) {
-                    if (w.getMonth().equals(p.getMonth())) {
-                        p.setWeightDouble(w.getWeight());
+                    if (w.getMonth().equals(perf.getMonth())) {
+                        perf.setWeightDouble(w.getWeight());
                     }
                 }
-                weightedStars += p.getAverageStars() * p.getWeightDouble();
-                weights += p.getWeightDouble();
+                weightedStars += perf.getAverageStars() * perf.getWeightDouble();
+                weights += perf.getWeightDouble();
             }
 
             double averagePerformance = 0;
@@ -41,6 +37,11 @@ public class PerformanceCalculator {
                 averagePerformance = MathUtil.roundWithDecimals(weightedStars / weights, 2);
             }
             player.setAveragePerformance(averagePerformance);
+
+            // reset weights if we just calculated the ranks of the previuos month
+            if (previous) {
+                resetWeights(player.getPerformanceList());
+            }
         }
 
         calculateRanks(playerMap, previous);
@@ -77,6 +78,12 @@ public class PerformanceCalculator {
             weightList.add(new Weight(month, weight));
         }
         return weightList;
+    }
+
+    public static void resetWeights(List<Performance> performanceList) {
+        for (Performance perf: performanceList) {
+            perf.setWeightDouble(0);
+        }
     }
 
 }
